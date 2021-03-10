@@ -1,0 +1,70 @@
+:root {
+    --nitroso: #e65d00;
+    --nitroso-secondary: #ff9c00;
+    --nitroso-third: #992a06;
+    --bg-button-principal: #e65d00; 
+    --bg-button-principal-hover: #a04204; 
+    --text-button-principal: white; 
+    --text-button-principal-hover: white; 
+}
+
+html,
+body,
+input,
+select,
+button,
+a {
+    font-family: 'Chakra Petch', sans-serif;
+}
+
+.text-nitroso {
+    color: var(--nitroso);
+}
+
+.text-nitroso-secondary {
+    color: var(--nitroso-secondary);
+}
+
+.btn-nitroso {
+    background-color: var(--bg-button-principal);
+    color: var(--text-button-principal);
+}
+
+.btn-nitroso:hover {
+    background-color: var(--bg-button-principal-hover);
+    color: var(--text-button-principal-hover);
+}
+
+.form-select {
+    background-color: black;
+    border: none;
+    border-bottom: 1px solid var(--nitroso-secondary);
+    border-radius: 0;
+    color: white;
+}
+
+.form-control {
+    background-color: black;
+    border: none;
+    border-bottom: 1px solid var(--nitroso-secondary);
+    border-radius: 0;
+    color: white !important;
+}
+
+.form-control:focus {
+    background-color: black;
+    box-shadow: none;
+}
+
+.form-control::placeholder {
+    color: rgb(197, 197, 197);
+}
+
+.form-check-input:checked {
+    background-color: var(--nitroso);
+    border-color: var(--nitroso-secondary);
+}
+
+.bg-black {
+    background-color: black;
+}
