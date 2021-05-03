@@ -52,17 +52,27 @@
 
     <!-- content -->
     <div id="wrapper" class="wrapper">
-        <div class="container">
+        <!-- message -->
+        <div class="message text-warning p-3">
+            <span id="texto"></span>
+        </div>
+        <!-- ventana de juego -->
+        <div class="game m-0 p-0">
         </div>
     </div>
 
     <!-- scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r126/three.min.js"></script>
-    <script src="/res/js/csts.js"></script>
-    <script src="/res/js/fun.js"></script>
-    <script src="/mods/game/game.js"></script>
+    <script src="/code/three.js"></script>
+    <script src="/code/MTLLoader.js"></script>
+    <script src="/code/OBJLoader.js"></script>
+    <script src="/code/FBXLoader.js"></script>
+    <script src="/code/inflate.min.js"></script>
+    <script src="/code/Model.js"></script>
+    <script src="/code/csts.js"></script>
+    <script src="/code/fun.js"></script>
+    <script src="/code/game.js"></script>
 
 </body>
 </html>
