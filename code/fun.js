@@ -50,3 +50,28 @@ const createSkyBox = textures => {
 
     return skybox;
 };
+
+const cloneWithAnimations = (object, arrayMixers) => {
+
+    let objectClone = SkeletonUtils.clone(object);
+
+    if (object.animations) {
+
+        objectClone.animations = object.animations;
+    
+        let mixer = new THREE.AnimationMixer(objectClone);
+    
+        for (let a of object.animations) {
+    
+            let action = mixer.clipAction(a);
+            action.play();
+        }
+
+        if (arrayMixers) {
+            
+            arrayMixers.push(mixer);
+        }
+    }
+    
+    return objectClone;
+};
