@@ -404,7 +404,210 @@ const loadModels = () => {
     }
 };
 
+<<<<<<< Updated upstream
 // functions
+=======
+// funcion que se llama en un setInterval (establecida en la funcion onLoadedAllModels)
+const spawnRandomProp = () => {
+
+    // obtenemos el nombre clave del escenario
+    let nameScene = getSceneBaseNameByIndex(sceneIndex);
+
+    // filtramos objetos ya instanciados que tengan la categoria env
+    let objs = objetos.filter(o => o.name.includes(nameScene + "_env_"));
+
+    // obtenemos un numero aleatorio del 0 al tamaño del arreglo
+    let rndm = Math.floor(Math.random() * objs.length);
+    
+    // creamos una instancia nueva del objeto obtenido aleatoriamente
+    let prop = objs[rndm].clone();
+    let prop2 = null;
+
+    // obtenemos una posicion entera random en el rango de x dependiendo de las constantes (150 - 200)
+    // Math.random() * (max - min) + min;
+    let rndmPosX = Math.floor(Math.random() * (SPAWN_PROP_LIMIT_POS_X_POS - 150) + 150);
+
+    // establecemos la posicion en base a la posicion x aleatoria obtenida y a la constante Z de los limites
+    prop.position.set(rndmPosX, 0, SPAWN_PROP_LIMIT_POS_Z_NEG);
+
+    // ya tenemos la decoracion para que spawnee del lado derecho, ahora hay que hacer lo mismo del lado izquierdo
+    // clonamos la decoracion e invertimos la posicion x para que también salga del otro lado (izquierdo)
+    prop2 = prop.clone();
+    prop2.position.x = -prop2.position.x;
+
+     // le restamos 7 en z para que aparezca un poco mas atras y no se va tan simetrico el spawneo en ambos extremos
+    prop2.position.z = prop2.position.z - 7;
+
+    // agregamos las dos decoraciones
+    _SCENE.add(prop);
+    _SCENE.add(prop2);
+
+};
+
+// funcion que se llama en un setInterval (establecida en la funcion onLoadedAllModels)
+const spawnRandomObstacle = () => {
+
+    // como los obstaculos spawnean en la pista, podemos reemplazar el spawneo de un obstaculo
+    // por un buff (probabilidad de 1/10 para que sea un buff)
+    let isObstacle = (Math.floor(Math.random() * 10) + 1) !== 1;
+    
+
+    // obtenemos una posicion entera random en el rango de x dependiendo de las constantes (0 - 80)
+    // Math.random() * (max - min) + min;
+    let rndmPosX = Math.floor(Math.random() * (SPAWN_OBS_LIMIT_POS_X_POS - 0) + 0);
+
+    // establecemos si es negativo o positivo de forma aleatoria
+    rndmPosX = (Math.floor(Math.random() * 2) + 1) === 1 ? rndmPosX : -rndmPosX;
+
+    let obs = null;
+
+    
+    
+
+    if (isObstacle) {
+
+        
+        // obtenemos el nombre clave del escenario
+        let nameScene = getSceneBaseNameByIndex(sceneIndex);
+    
+        // filtramos objetos ya instanciados que tengan la categoria obs
+        let objs = objetos.filter(o => o.name.includes(nameScene + "_obs_"));
+    
+        // obtenemos un numero aleatorio del 0 al tamaño del arreglo
+        let rndm = Math.floor(Math.random() * objs.length);
+        
+        // creamos una instancia nueva del objeto obtenido aleatoriamente
+        obs = objs[rndm].clone();
+
+
+        //-------COLISION DE OBSTACULOS (PRUEBA)------------//
+
+
+        firstBB = new THREE.Box3().setFromObject(obs);
+        secondBB = new THREE.Box3().setFromObject(carro);
+        var collision = firstBB.intersectsBox(secondBB);
+         
+        if(collision){
+         
+        console.log("si hay colision");
+           
+        }
+
+
+       
+     
+    } else {
+
+        let buffObject = objetos.find(o => o.name.includes("buff_1"));
+        obs = cloneWithAnimations(buffObject, modelMixers);
+
+        
+    }
+
+    // establecemos su posicion
+    obs.position.set(rndmPosX, 0, SPAWN_OBS_LIMIT_POS_Z_NEG);
+
+    // agregamos a la escena
+    _SCENE.add(obs);
+    
+    
+       //----------PRUEBA COLISION (CARROS)--------------//
+
+       //let deltaTime = _CLOCK.getDelta();
+
+       //firstBB = new THREE.Box3().setFromObject(carro2);
+       //secondBB = new THREE.Box3().setFromObject(carro);
+       //var collision = firstBB.intersectsBox(secondBB);
+    
+       //if(collision){
+    
+        //carro.position.x -= 30;
+        //console.log("si hay colision");
+      
+       //}
+
+
+
+
+};
+
+// funcion que obtiene todos los props (decoraciones) y va moviendolos hacia atras
+const moveProps = (deltaTime) => {
+
+    let props = _SCENE.children.filter(o => o.name.includes("_env_"));
+
+    for (let prop of props) {
+
+        let sceneObject = _SCENE.getObjectById(prop.id);
+
+        if (prop.position.z >= SPAWN_PROP_LIMIT_POS_Z_POS) {
+            _SCENE.remove(sceneObject);
+        }
+
+        sceneObject.position.z += velocidad * deltaTime * 1500;
+    }
+};
+
+// funcion que obtiene todos los obs (obstaculos) y va moviendolos hacia atras
+const moveObstacles = (deltaTime) => {
+
+    let obstacles = _SCENE.children.filter(o => o.name.includes("_obs_") || o.name.includes("buff"));
+
+    for (let obs of obstacles) {
+
+        let sceneObject = _SCENE.getObjectById(obs.id);
+
+        if (obs.position.z >= SPAWN_OBS_LIMIT_POS_Z_POS) {
+
+
+            
+
+            let mixerIdx = modelMixers.findIndex(n => n._root.id === sceneObject.id);
+
+            if (mixerIdx >= 0) {
+
+                
+                modelMixers.splice(mixerIdx, 1);
+                
+            }
+
+            _SCENE.remove(sceneObject);
+        }
+
+        sceneObject.position.z += velocidad * deltaTime * 1500;
+    }
+
+
+};
+
+// inicializamos y configuramos los eventos del teclado
+const inicializarEventosTeclas = () => {
+
+    pause(false);
+
+    $(window).on("keydown", (e) => {
+
+        // [TECLA P] pausamos
+        if (e.keyCode == 80) {
+            pause(!isPause);
+        }
+
+        // [TECLA C] cambiamos el escenario
+        if (e.keyCode == 67) {
+
+            // cambiamos el index
+            sceneIndex = sceneIndex > 1 ? 0 : sceneIndex + 1;
+
+            // cambiamos textura de la pista
+            pista.children[0].material.map = getPistaTextureByIndex(sceneIndex);
+        }
+    });
+
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+};
+
+>>>>>>> Stashed changes
 const pause = (show = true) => {
 
     let height = "0px";
@@ -442,4 +645,12 @@ const showText = (text) => {
 
 const spawnProp = () => {
 
+<<<<<<< Updated upstream
 };
+=======
+// funcion de evento al dejar de presionar una tecla
+function onKeyUp(event) {
+    keys[String.fromCharCode(event.keyCode)] = false;
+}
+
+>>>>>>> Stashed changes
