@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="/res/fonts/fontawesome/css/all.min.css">
 
     <!-- styles -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link href="/res/lib/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/res/css/loader.css">
     <link rel="stylesheet" href="/site.css">
     <link rel="stylesheet" href="/index.css">
@@ -45,6 +45,8 @@
         <img src="/res/logos/n.png" alt="">
     </div>
 
+    <!-- <div id="fb-root"></div> -->
+
     <!-- content -->
     <div id="wrapper" class="wrapper">
         <div class="container">
@@ -55,17 +57,16 @@
                             <img src="/res/logos/logo.png" alt="" class="logo-img w-100">
                         </div>
                         <div class="row g-3 botones text-white">
-                            <div class="col-12 text-center">
+                            <!-- <div class="col-12 text-center">
                                 <div class="row">
                                     <label for="" class="h3 col-12">
                                         ¡Bienvenido!
                                     </label>
                                     <div class="col-12">
-                                        <input type="text" placeholder="Ingresa tu nickname" class="form-control nick text-center" value="XxAssasinsxX">
+                                        <input type="text" placeholder="Ingresa tu nickname" class="form-control nick text-center" value="NOMBRE_USUARIO">
                                     </div>
                                 </div>
-                                <!-- <label for="" class="h3 me-2">¡Bienvenido!</label> -->
-                            </div>
+                            </div> -->
                             <div class="col-12">
                                 <a href="#!" data-bs-toggle="modal" data-bs-target="#mdlOptions">
                                     <img src="/res/examples/btn_play.png" alt="" srcset="" class="w-100">
@@ -77,21 +78,33 @@
                                 </a>
                             </div>
                             <div class="col-12">
-                                <a href="#!" data-bs-toggle="modal" data-bs-target="#mdlScore">
+                                <a href="#!" data-bs-toggle="modal" data-bs-target="#mdlScore" onclick="onBtnScoreClick();">
                                     <img src="/res/examples/btn_score.png" alt="" srcset="" class="w-100">
                                 </a>
                             </div>
-                            <div class="col-12">
+                            <!-- <div class="col-12">
                                 <hr>
                             </div>
-                            <div class="col-12 text-center">
+                            <div clas="col-12">
+                                <div class="fb-login-button" 
+                                    data-use-continue-as="true" 
+                                    data-width="" 
+                                    data-size="large" 
+                                    data-button-type="login_with" 
+                                    data-layout="rounded" 
+                                    data-auto-logout-link="true" 
+                                    data-onlogin="checkLoginState();"
+                                    scope="public_profile, email">
+                                </div>
+                            </div> -->
+                            <!-- <div class="col-12 text-center">
                                 ¿Ya tienes una cuenta?
                                 <strong>
                                     <a href="#!" class="text-nitroso-secondary" data-bs-toggle="modal" data-bs-target="#mdlLogin">
                                         Haz click aqui para iniciar sesión
                                     </a>
                                 </strong>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -107,19 +120,78 @@
                     <h5 class="modal-title" id="mdlOptionsLbl">Modal title</h5>
                 </div> -->
                 <div class="modal-body">
-                    <div class="title text-center bg-black d-flex align-items-center justify-content-center py-3">
-                        <h1 class="ms-auto">Selecciona el nivel a jugar</h1>
-                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div id="multijugador" class="multijugador container-fluid">
+                        <div class="row">
+                            <div class="col-12 col-lg-4 col-xl-3 mx-auto">
+                                <div class="row">
+                                    <div class="mb-3">
+                                        <h3 class="h2 mt-5" style="color: orange;">Modo de juego</h1>
+                                        <small class="text-white">Si no existe el usuario se creará automaticamente</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Modo de juego</label>
+                                        <select id="slCantJugadores" class="form-select form-select-lg" onchange="onCantJugadoresChange();">
+                                            <option value="1">Un jugador</option>
+                                            <option value="2">Dos jugadores</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Datos del 1er jugador</label>
+                                        <div class="col-12 mb-3">
+                                            <input id="txtNickJugador1" type="text" placeholder="Nick del 1er jugador" class="form-control form-control-lg nick" value="">
+                                        </div>
+                                        <div class="col-12">
+                                            <input id="txtPassJugador1" type="password" placeholder="Contraseña del 1er jugador" class="form-control form-control-lg nick" value="">
+                                        </div>
+                                    </div>
+                                    <div id="jugador-dos" class="mb-3 d-none">
+                                        <label class="form-label">Datos del 2do jugador</label>
+                                        <div class="col-12 mb-3">
+                                            <input id="txtNickJugador2" type="text" placeholder="Nick del 2do jugador" class="form-control form-control-lg nick" value="">
+                                        </div>
+                                        <div class="col-12">
+                                            <input id="txtPassJugador2" type="password" placeholder="Contraseña del 2do jugador" class="form-control form-control-lg nick" value="">
+                                        </div>
+                                    </div>
+                                    <!-- dificultad -->
+                                    <div class="mb-3">
+                                        <label for="" class="form-label">Dificultad</label>
+                                        <select id="slDificultad" class="form-select form-select-lg">
+                                            <option value="1">Fácil (velocidad x1)</option>
+                                            <option value="2">Normal (velocidad x3)</option>
+                                            <option value="3">Nitrosa (velocidad x5)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3 text-center">
+                                        <label id="alert" class="" style="color: yellow;"></label>
+                                    </div>
+                                    <div class="mb-3 text-end">
+                                        <button class="btn btn-secondary" onclick="onBtnVolverClick();" data-bs-dismiss="modal">
+                                            Volver
+                                        </button>
+                                        <button class="btn btn-secondary btn-nitroso" onclick="onBtnContinuarClick();">
+                                            Continuar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="row options mx-0 h-100">
-                        <div class="scene col-12 col-lg-4 px-0">
-                            <h2 class="text-white">Bosque</h2>
+                    <div id="niveles" class="niveles h-100 d-none">
+                        <div class="title text-center bg-black d-flex align-items-center justify-content-center py-3">
+                            <h1 class="ms-auto">Selecciona el nivel a jugar</h1>
+                            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="scene col-12 col-lg-4 px-0">
-                            <h2 class="text-white">Nieve</h2>
-                        </div>
-                        <div class="scene col-12 col-lg-4 px-0">
-                            <h2 class="text-white">Playa</h2>
+                        <div class="row options mx-0 h-100">
+                            <div class="scene col-12 col-lg-4 px-0" onclick="setScene(0);">
+                                <h2 class="text-white">Bosque</h2>
+                            </div>
+                            <div class="scene col-12 col-lg-4 px-0" onclick="setScene(2);">
+                                <h2 class="text-white">Nieve</h2>
+                            </div>
+                            <div class="scene col-12 col-lg-4 px-0" onclick="setScene(1);">
+                                <h2 class="text-white">Desierto</h2>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -145,33 +217,6 @@
                         </div>
                         <div class="col-12 col-lg-4">
                             <img src="/res/images/settings.png" class="w-100" alt="">
-                        </div>
-                    </div>
-                    <!-- dificultad -->
-                    <div class="mb-3 row">
-                        <label for="" class="col-12 col-lg-4 col-xl-4 col-form-label">
-                            Dificultad
-                        </label>
-                        <div class="col-12 col-lg-8 col-xl-8">
-                            <select name="" id="" class="form-select">
-                                <option value="0">Fácil</option>
-                                <option value="1">Normal</option>
-                                <option value="2">Nitrosa</option>
-                            </select>
-                        </div>
-                    </div>
-                    <!-- particulas -->
-                    <div class="mb-3 row">
-                        <label for="" class="col-12 col-lg-4 col-xl-4 col-form-label">
-                            Nicknames
-                        </label>
-                        <div class="col-12 col-lg-8 col-xl-8">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" value="" id="chkMostrarNicks" checked>
-                                <label class="form-check-label" for="chkMostrarNicks">
-                                    Mostrarlos
-                                </label>
-                            </div>
                         </div>
                     </div>
                     <!-- sonido -->
@@ -224,31 +269,18 @@
                             <table class="table table-dark table-striped">
                                 <thead>
                                     <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Nick</th>
-                                    <th scope="col">Lugar</th>
-                                    <th scope="col">Tiempo</th>
+                                    <th scope="col">NICK</th>
+                                    <th scope="col">DIFICULTAD</th>
+                                    <th scope="col">SCORE</th>
+                                    <th scope="col">FECHA</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                    <th scope="row">1</th>
-                                    <td>Mark</td>
-                                    <td>1</td>
-                                    <td>3:58s</td>
-                                    </tr>
-                                    <tr>
-                                    <th scope="row">2</th>
-                                    <td>Tommy</td>
-                                    <td>3</td>
-                                    <td>2:15s</td>
-                                    </tr>
-                                    <tr>
-                                    <th scope="row">3</th>
-                                    <td>Firulais</td>
-                                    <td>2</td>
-                                    <td>1:24s</td>
-                                    </tr>
+                                <tbody id="scores">
+                                    <!-- <tr>
+                                        <td>Mark</td>
+                                        <td>NORMAL</td>
+                                        <td>0</td>
+                                    </tr> -->
                                 </tbody>
                             </table>
                         </div>
@@ -298,14 +330,14 @@
                                 <div class="col-12 text-white">
                                     <hr>
                                 </div>
-                                <div class="col-12 text-center">
+                                <!-- <div class="col-12 text-center">
                                     ¿No tienes una cuenta? 
                                     <strong>
                                         <a class="btnVerRegistro" href="#!">
                                             Haz click aqui para registrarte
                                         </a>
                                     </strong>
-                                </div>
+                                </div> -->
                                 <div class="col-12 text-white">
                                     <hr>
                                 </div>
@@ -315,12 +347,15 @@
                                     </label>
                                 </div>
                                 <div class="col-12 text-center buttons-redes">
+
                                     <a href="#!" class="btn btn-secondary btn-lg fb">
                                         <i class="fab fa-facebook-f"></i>
                                     </a>
+
                                     <a href="#!" class="btn btn-secondary btn-lg tw">
                                         <i class="fab fa-twitter"></i>
                                     </a>
+
                                 </div>
                             </div>
                         </div>
@@ -397,15 +432,17 @@
                 </div> -->
             </div>
         </div>
-    </div>
+    </div> 
 
     <!-- scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
-    <script src="/code/three.js"></script>
+    <script src="/res/lib/jquery.min.js"></script>
+    <script src="/res/lib/bootstrap.min.js"></script>
     <script src="/code/csts.js"></script>
     <script src="/code/fun.js"></script>
+    <script src="/code/ajax.js"></script>
     <script src="/index.js"></script>
 
+    <!-- <script async defer crossorigin="anonymous" src="https://connect.facebook.net/es_ES/sdk.js#xfbml=1&version=v10.0&appId=1458428857833266&autoLogAppEvents=1" nonce="AfglOnxd"></script> -->
+    
 </body>
 </html>

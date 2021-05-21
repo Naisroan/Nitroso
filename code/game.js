@@ -6,6 +6,7 @@ const _LIMITE_FPS = 1 / 60;
 const _COLOR_HEX_CLEAR_COLOR = 0xF4BF75;
 const MODELS_PATH = "/res/models/";
 const TEXTURES_PATH = "/res/textures/";
+const SPRITES_PATH = "/res/sprites/";
 
 // limites de spawn de decoraciones
 const SPAWN_PROP_LIMIT_POS_Z_POS = 130;
@@ -19,6 +20,16 @@ const SPAWN_OBS_LIMIT_POS_Z_POS = 100;
 const SPAWN_OBS_LIMIT_POS_X_POS = 80;
 const SPAWN_OBS_LIMIT_POS_X_NEG = -80;
 
+// limites carretara
+const LIMIT_HIGHWAY_POS_X = 85;
+const LIMIT_HIGHWAY_POS_Z_POS = 50;
+const LIMIT_HIGHWAY_POS_Z_NEG = -150;
+
+// sonidos
+let auAmbient = null;
+let auChoque = null;
+let auBuff = null;
+
 // globales
 let _SCENE = new THREE.Scene();
 let _CLOCK = new THREE.Clock();
@@ -27,13 +38,21 @@ let _CAMERA = null;
 let _MESSAGE = null;
 
 let spawnProps = true;
-let spawnObstacles = true;
-let velocidad = 0.1;
-let sceneIndex = 0; // 0 - bosque, 1 - playa, 2 - nieve
+let spawnObstacles = false;
+
+let velocidad = 0.3;
+let factorMovimientoJugador = 50;
+
+let sceneIndex = 0; // 0 - bosque, 1 - desierto, 2 - nieve
+
+let isStart = false;
 let isPause = false;
+let isGameOver = false;
+
 let timeElapsed = 0;
 let isLoadedModels = false;
 let keys = [];
+
 let ilumination = {
     ambient: new THREE.AmbientLight(new THREE.Color(1.0, 1.0, 1.0), 1.0),
     directional: new THREE.DirectionalLight(new THREE.Color(1,1, 1), 1.0),
@@ -94,103 +113,150 @@ let carro = null;
 let carro2 = null;
 let pista = null;
 let pistaMaterials = [];
+let particulas = null;
+let particulasMaterials = [];
+
+let modo = 1;
+let dificultad = 1;
+let player_1_id = 0;
+let player_2_id = 0;
+let player_1_nick = "";
+let player_2_nick = "";
+let volumen = 1;
+
+const getPistaTextureByIndex = idx => pistaMaterials[idx];
+const getParticleTextureByIndex = idx => particulasMaterials[idx];
 
 // load
-$(() => {
+window.onload = () => {
 
     // iniciamos configuraciones
     init();
 
     // cargamos modelos
     loadModels();
-});
+};
 
 // funcion que se llama en cada frame
 const update = (deltaTime) => {
 
+    // carro 1
     if (keys["W"]) {
-        carro.translateZ(-30 * deltaTime);
+
+        if (carro.position.z > LIMIT_HIGHWAY_POS_Z_NEG) {
+
+            carro.translateZ(-factorMovimientoJugador * deltaTime);
+        }
     }
 
     if (keys["S"]) {
-        carro.translateZ(30 * deltaTime);
+
+        if (carro.position.z < LIMIT_HIGHWAY_POS_Z_POS) {
+
+            carro.translateZ(factorMovimientoJugador * deltaTime);
+        }
     }
 
     if (keys["A"]) {
-        // _CAMERA.translateX(-10 * deltaTime);
-        carro.position.x -= 30 * deltaTime;
+
+        if (carro.position.x > -LIMIT_HIGHWAY_POS_X) {
+
+            carro.position.x -= factorMovimientoJugador * deltaTime;
+        }
     }
 
     if (keys["D"]) {
-        // _CAMERA.translateX(10 * deltaTime);
-        carro.position.x += 30 * deltaTime;
+
+        if (carro.position.x < LIMIT_HIGHWAY_POS_X) {
+
+            carro.position.x += factorMovimientoJugador * deltaTime;
+        }
     }
 
-    if (keys["T"]) {
-        carro2.translateZ(-30 * deltaTime);
+    if (!carro.isCrashed) {
+        carro.score += velocidad;
     }
 
-    if (keys["G"]) {
-        carro2.translateZ(30 * deltaTime);
+    // carro 2
+
+    if (modo == 2) {
+
+        if (keys["I"]) {
+    
+            if (carro2.position.z > LIMIT_HIGHWAY_POS_Z_NEG) {
+    
+                carro2.translateZ(-factorMovimientoJugador * deltaTime);
+            }
+        }
+    
+        if (keys["K"]) {
+    
+            if (carro2.position.z < LIMIT_HIGHWAY_POS_Z_POS) {
+    
+                carro2.translateZ(factorMovimientoJugador * deltaTime);
+            }
+        }
+    
+        if (keys["J"]) {
+    
+            if (carro2.position.x > -LIMIT_HIGHWAY_POS_X) {
+    
+                carro2.position.x -= factorMovimientoJugador * deltaTime;
+            }
+        }
+    
+        if (keys["L"]) {
+    
+            if (carro2.position.x < LIMIT_HIGHWAY_POS_X) {
+    
+                carro2.position.x += factorMovimientoJugador * deltaTime;
+            }
+        }
+
+        if (!carro2.isCrashed) {
+            carro2.score += velocidad;
+        }
     }
 
-    if (keys["F"]) {
-        carro2.position.x -= 30 * deltaTime;
-    }
-
-    if (keys["H"]) {
-        carro2.position.x += 30 * deltaTime;
-    }
-
-    if (keys["Q"]) {
-        _CAMERA.translateY(10 * deltaTime);
-    }
-
-    if (keys["E"]) {
-        _CAMERA.translateY(-10 * deltaTime);
-    }
-
-    if (keys["Z"]) {
-        _CAMERA.rotateX(10 * deltaTime);
-    }
-
-    if (keys["X"]) {
-        _CAMERA.rotateX(-10 * deltaTime);
-    }
-
-    _SCENE.fog.color = ilumination.hemisphere.groundColor;
-
-    // movemos
-    moveProps(deltaTime);
     moveObstacles(deltaTime);
 
-    if (pista !== undefined && pista !== null) {
-
-        pista.children[0].material.map.offset.y -= velocidad * deltaTime;
-    }
+    _SCENE.fog.color = ilumination.hemisphere.groundColor;
 };
 
 // funcion que se manda a llamar una unica vez al cargar todos los modelos
 const onLoadedAllModels = () => {
 
     let llantas = objetos.find(o => o.name === "player_llantas");
+    let llantas2 = null;
 
     carro = objetos.find(o => o.name === "player_carro_1");
     carro2 = null;
 
     if (carro && llantas) {
 
-        let llantas2 = cloneWithAnimations(llantas, modelMixers);
-        carro2 = cloneWithAnimations(carro, modelMixers);
-
         carro.add(llantas);
-        carro2.add(llantas2);
-
-        carro.position.set(-24, 0, 0);
-        carro2.position.set(24, 0, 0);
-
+        carro.isCrashed = false;
+        carro.isBuff = false;
+        carro.score = 0;
+        carro.position.set(0, 0, 0);
         _SCENE.add(carro);
-        _SCENE.add(carro2);
+
+        if (modo == 2) {
+
+            llantas2 = cloneWithAnimations(llantas, modelMixers);
+            carro2 = cloneWithAnimations(carro, modelMixers);
+            
+            carro2.add(llantas2);
+
+            carro2.isCrashed = false;
+            carro2.isBuff = false;
+            carro2.score = false;
+            
+            _SCENE.add(carro2);
+
+            carro.position.set(-24, 0, 0);
+            carro2.position.set(24, 0, 0);
+        }
     }
 
     pista = objetos.find(o => o.name === "pista");
@@ -206,31 +272,68 @@ const onLoadedAllModels = () => {
     // llamamos al loop del juego
     loop();
 
-    // iniciamos el spawn de props y obs
+    // iniciamos el spawn de props
     setInterval(() => {
 
-        if (!isPause && spawnProps) {
+        if (spawnProps) {
             spawnRandomProp();
         }
 
     }, 800);
 
+    // iniciamos el spawn de obs
     setInterval(() => {
 
-        if (!isPause && spawnObstacles) {
+        if (!isPause && isStart && spawnObstacles) {
             spawnRandomObstacle();
         }
 
     }, 1000);
 
+    isLoadedModels = true;
+
     // quitamos la barra de carga
     setTimeout(() => {
-        showLoader(false);
-    }, 2000);
+        showInstrucciones(false);
+    }, 3500);
 };
 
 // funcion que se manda a llamar una unica vez al cargar el dom
 const init = () => {
+
+    // obtenemos configuracion del modo de juego
+    dificultad = localStorage.getItem("dificultad") != null ? parseInt(localStorage.getItem("dificultad")) : 1;
+    modo = localStorage.getItem("modo") != null ? parseInt(localStorage.getItem("modo")) : 1;
+    player_1_nick = localStorage.getItem("player_1") != null ? localStorage.getItem("player_1") : "player_1";
+    player_2_nick = localStorage.getItem("player_2") != null ? localStorage.getItem("player_2") : "player_2";
+    player_1_id = localStorage.getItem("player_1_id") != null ? parseInt(localStorage.getItem("player_1_id")) : 0;
+    player_2_id = localStorage.getItem("player_2_id") != null ? parseInt(localStorage.getItem("player_2_id")) : 0;
+    sceneIndex = localStorage.getItem("scene") != null ? parseInt(localStorage.getItem("scene")) : 0;
+    volumen = localStorage.getItem("volumen") != null ? parseFloat(localStorage.getItem("volumen")) : 1;
+
+    if (dificultad == 1) {
+        velocidad = 0.3;
+    } else if (dificultad == 2) {
+        velocidad = 0.5;
+    } else if (dificultad == 3) {
+        velocidad = 0.7;
+    }
+    
+    if (modo == 2) {
+        $("#pjugador2").removeClass("d-none");
+    }
+
+    $("#jugador-uno").text(player_1_nick);
+    $("#jugador-dos").text(player_2_nick);
+
+    // obtenemos sonidos
+    auAmbient = document.getElementById("auAmbient");
+    auChoque = document.getElementById("auChoque");
+    auBuff = document.getElementById("auBuff");
+
+    auAmbient.volume = volumen;
+    auChoque.volume = volumen;
+    auChoque.volume = volumen;
 
     // obtenemos el area donde renderizará
     let device = $('#wrapper .game');
@@ -286,14 +389,6 @@ const init = () => {
     _SCENE.add(ilumination.directional);
     // _SCENE.add(ilumination.hemisphere);
 
-    // añadimos un grid de apoyo
-    /*
-    let grid = new THREE.GridHelper(50, 10, 0xFFFFFF, 0xFFFFFF);
-    grid.position.y = -1;
-
-    _SCENE.add(grid);
-    */
-
     // creamos skybox
     let skyBox = createSkyBox({
         up: TEXTURES_PATH + "skybox_test/DaylightBox_Top.bmp",
@@ -319,6 +414,20 @@ const init = () => {
         pistaMaterials[i].wrapT = THREE.RepeatWrapping;
     }
 
+    // particulas
+    particulas = createParticles(SPRITES_PATH, "par_water_01.png", 1, 3000);
+    
+    particulasMaterials.push(texLoader.load(SPRITES_PATH + "par_water_01.png"));
+    particulasMaterials.push(texLoader.load(SPRITES_PATH + "par_sand_01.png"));
+    particulasMaterials.push(texLoader.load(SPRITES_PATH + "par_snow_01.png"));
+
+    for (let i = 0; i < particulasMaterials.length; i++) {
+        pistaMaterials[i].premultiplyAlpha = true;
+    }
+
+    // 
+    _SCENE.add(particulas);
+
     // establecemos eventos de teclas
     inicializarEventosTeclas();
 };
@@ -333,14 +442,14 @@ const loop = () => {
     // establecemos color al canvas
     _RENDERER.setClearColor(ilumination.hemisphere.color);
 
-    if (!isPause) {
-    
-        // si no esta en pausa, aplicamos logica del juego
-        update(deltaTime);
-    }
-
     // limitamos los FPS
     if (timeElapsed > _LIMITE_FPS) {
+
+        if (!isPause && isStart) {
+        
+            // si no esta en pausa, aplicamos logica del juego
+            update(deltaTime);
+        }
 
         // actualizamos animaciones
         animate(deltaTime);
@@ -356,6 +465,28 @@ const loop = () => {
     window.requestAnimationFrame(() => loop());
 };
 
+// funcion que se ejecuta al momento que indica el jugador
+const start = () => {
+
+    if (!isLoadedModels) {
+        return;
+    }
+    
+    $("#start-text").text("INICIANDO, ¡PREPARENSE!");
+
+    setTimeout(() => {
+
+        $("#start").addClass("popo");
+
+        auAmbient.loop = true;
+        auAmbient.play();
+        spawnObstacles = true;
+        isStart = true;
+
+
+    }, 3000);
+};
+
 // funcion que se llama en el loop del juego, es para actualizar las animaciones
 const animate = (deltaTime) => {
 
@@ -367,6 +498,53 @@ const animate = (deltaTime) => {
 
         mixer.update(deltaTime);
     }
+
+    // movemos objetos
+    moveProps(deltaTime);
+
+    // movemos pista
+    if (pista !== undefined && pista !== null) {
+
+        pista.children[0].material.map.offset.y -= velocidad * deltaTime;
+    }
+
+    // animacion de carro estrellado
+    if (carro.isCrashed && carro.position.y <= 100 && carro.position.z <= 100) {
+
+        carro.position.z += 5;
+        carro.position.y += 2;
+        carro.rotateX(10);
+    }
+
+    // animacion de carro estrellado
+    if (modo == 2 && carro2.isCrashed && carro2.position.y <= 100 && carro2.position.z <= 100) {
+
+        carro2.position.z += 5;
+        carro2.position.y += 2;
+        carro2.rotateX(10);
+    }
+
+    // particulas
+    particulas.rotation.y += 0.01;
+    let particleIndex = particulas.particlesCount;
+
+    while (particleIndex--) {
+  
+        // pista.children[0].material.map = getPistaTextureByIndex(sceneIndex);
+        let particle = particulas.geometry.vertices[particleIndex];
+        particulas.material.map = getParticleTextureByIndex(sceneIndex);
+  
+        if (particle.y < -250) {
+            particle.y = 250;
+            particle.velocity.y = 0;
+        }
+    
+        particle.velocity.y -= Math.random() * 0.1;
+        particle.add(particle.velocity);
+    }
+  
+    particulas.geometry.uvsNeedUpdate = true;
+    particulas.geometry.verticesNeedUpdate = true;
 };
 
 // funcion que se manda a llamar al cargar un modelo
@@ -407,9 +585,6 @@ const onLoadedModel = (name, model, options) => {
             return;
         }
     }
-
-    // si no hizo return en el ciclo pasado quiere decir que los modelos han sido cargados
-    isLoadedModels = true;
 
     // configuramos objetos 3d
     onLoadedAllModels();
@@ -499,6 +674,20 @@ const spawnRandomObstacle = () => {
     
         // obtenemos un numero aleatorio del 0 al tamaño del arreglo
         let rndm = Math.floor(Math.random() * objs.length);
+
+        // le creamos una caja de colision
+        // let obsBox = new THREE.Box3().setFromObject(obs);
+        // let carroBox = new THREE.Box3().setFromObject(obs);
+
+        // var collision = obsBox.intersectsBox(carroBox);
+
+        // // secondBB = new THREE.Box3().setFromObject(carro);
+         
+        // if(collision){
+         
+        // console.log("si hay colision");
+           
+        // }
         
         // creamos una instancia nueva del objeto obtenido aleatoriamente
         obs = objs[rndm].clone();
@@ -512,8 +701,150 @@ const spawnRandomObstacle = () => {
     // establecemos su posicion
     obs.position.set(rndmPosX, 0, SPAWN_OBS_LIMIT_POS_Z_NEG);
 
+    obs.isCrashed = false;
+
     // agregamos a la escena
     _SCENE.add(obs);
+};
+
+// funcion que verifica la colision entre dos objetos
+const isCollision = (obj, obj2) => {
+
+    let objBox = new THREE.Box3().setFromObject(obj);
+    let obj2Box = new THREE.Box3().setFromObject(obj2);
+    
+    return objBox.intersectsBox(obj2Box);
+};
+
+// funcion que se ejecuta al colisionar un carro con algún objeto (ya sea obs o buff)
+const onCollision = (obj, collidedObject) => {
+
+    if (collidedObject.name.includes("buff")) {
+        
+        buffCar(obj);
+        killObs(collidedObject);
+        // console.log("BUFF!!!");
+
+    } else if (collidedObject.name.includes("obs")) {
+        
+        // si no tiene un buff activado lo manda a volar jiji
+        if (!obj.isBuff) {
+            killCar(obj);
+        }
+
+        killObs(collidedObject);
+        // console.log("BUUM!!!");
+
+    } else if (collidedObject.name.includes("env")) {
+        
+        console.log("CRASHHH!!!");
+
+    } else {
+        
+        console.log("???");
+    }
+};
+
+// funcion que se ejecuta al colisionar un carro con un obs
+const killCar = (car) => {
+
+    auChoque.play();
+    car.isCrashed = true;
+
+    if (modo == 1 ? (true) : (carro2.isCrashed)) {
+
+        if (!isGameOver) {
+            
+            isGameOver = true;
+
+            setTimeout(() => {
+        
+                gameOver();
+        
+            }, 1500);
+        }
+    }
+};
+
+const gameOver = () => {
+
+    isPause = true;
+    isStart = false;
+
+    let carroScore = carro.score.toFixed(2);
+    let carro2Score = modo == 2 ? carro2.score.toFixed(2) : 0;
+
+    $("#gameover").removeClass("popo");
+    $("#jugador-uno-score").text(carroScore);
+    $("#jugador-dos-score").text(carro2Score);
+
+    let score1 = {
+        id_usuario: player_1_id,
+        score: carroScore,
+        dificultad: dificultad
+    };
+
+    puntuacion_create(score1).done((result) => {
+
+        if (result == "" || parseInt(result) <= 0) {
+            console.log(result);
+            return;
+        }
+    })
+    .fail((jqXHR) => {
+
+        console.log(jqXHR.responseText);
+        return;
+    });
+
+    if (modo == 2) {
+
+        let score2 = {
+            id_usuario: player_2_id,
+            score: carro2Score,
+            dificultad: dificultad
+        };
+
+        puntuacion_create(score2).done((result) => {
+
+            if (result == "" || parseInt(result) <= 0) {
+                console.log(result);
+                return;
+            }
+        })
+        .fail((jqXHR) => {
+
+            console.log(jqXHR.responseText);
+            return;
+        });
+    }
+};
+
+// funcion que se ejecuta al colisionar un carro con un buff
+const buffCar = (car) => {
+
+    if (car.isBuff) {
+        return;
+    }
+
+    auBuff.play();
+    car.isBuff = true;
+    velocidad = velocidad + 0.2;
+
+    setTimeout(() => {
+
+        car.isBuff = false;
+        velocidad = velocidad - 0.2;
+
+    }, 5000);
+};
+
+// funcion que se ejecuta al colisionar un carro con un obs
+const killObs = (obs) => {
+
+    if (obs !== undefined) {
+        obs.isCrashed = true;
+    }
 };
 
 // funcion que obtiene todos los props (decoraciones) y va moviendolos hacia atras
@@ -542,7 +873,15 @@ const moveObstacles = (deltaTime) => {
 
         let sceneObject = _SCENE.getObjectById(obs.id);
 
-        if (obs.position.z >= SPAWN_OBS_LIMIT_POS_Z_POS) {
+        if (isCollision(carro, sceneObject)) {
+            onCollision(carro, sceneObject);
+        }
+
+        if (modo == 2 && isCollision(carro2, sceneObject)) {
+            onCollision(carro2, sceneObject);
+        }
+
+        if (sceneObject.position.z >= SPAWN_OBS_LIMIT_POS_Z_POS) {
 
             let mixerIdx = modelMixers.findIndex(n => n._root.id === sceneObject.id);
 
@@ -551,6 +890,11 @@ const moveObstacles = (deltaTime) => {
             }
 
             _SCENE.remove(sceneObject);
+        }
+
+        if (sceneObject.isCrashed && sceneObject.position.y <= 100) {
+            sceneObject.position.y += 4;
+            // sceneObject.position.z += velocidad * deltaTime * 1500;
         }
 
         sceneObject.position.z += velocidad * deltaTime * 1500;
@@ -619,8 +963,6 @@ const showText = (text) => {
     _MESSAGE.text(text);
 };
 
-const getPistaTextureByIndex = idx => pistaMaterials[idx];
-
 const getSceneBaseNameByIndex = idx => {
     
     switch (idx) {
@@ -650,3 +992,35 @@ function onKeyDown(event) {
 function onKeyUp(event) {
     keys[String.fromCharCode(event.keyCode)] = false;
 }
+
+// funcion utlizada para compartir resultado en facebook
+const shareScore = () => {
+
+    let leyenda = "";
+
+    let score1 = carro.score.toFixed(2);
+    let score2 = modo == 1 ? 0 : carro2.score.toFixed(2);
+    let dificultyName = dificultad == 1 ? "fácil" : (dificultad == 2 ? "normal" : "nitrosa!");
+
+    if (modo == 1) {
+
+        leyenda = player_1_nick + " obtuvo una puntuación de " + score1 + " en la dificultad " + dificultyName;
+
+    } else {
+    
+        leyenda = `
+            ${player_1_nick} y ${player_2_nick} obtuvieron una puntuación de ${score1} y ${score2} 
+            correspondientemente en la dificultad ${dificultyName}
+        `;
+    }
+
+    FB.ui({
+
+        method: 'share',
+        href: 'nitroso.com',
+        hashtag: '#nitroso',
+        quote: leyenda
+
+    }, (response) => {
+    });
+};
