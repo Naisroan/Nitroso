@@ -25,6 +25,9 @@ const LIMIT_HIGHWAY_POS_X = 85;
 const LIMIT_HIGHWAY_POS_Z_POS = 50;
 const LIMIT_HIGHWAY_POS_Z_NEG = -150;
 
+// zona muerta de controles
+const CONTROL_THRESHOLD = 8689 / 32767.0;
+
 // sonidos
 let auAmbient = null;
 let auChoque = null;
@@ -116,6 +119,9 @@ let pistaMaterials = [];
 let particulas = null;
 let particulasMaterials = [];
 
+let gamepad1 = null;
+let gamepad2 = null;
+
 let modo = 1;
 let dificultad = 1;
 let player_1_id = 0;
@@ -140,87 +146,30 @@ window.onload = () => {
 // funcion que se llama en cada frame
 const update = (deltaTime) => {
 
-    // carro 1
-    if (keys["W"]) {
+    // actualizar los valores de los gamepads
+    actualizarValoresGamepads();
 
-        if (carro.position.z > LIMIT_HIGHWAY_POS_Z_NEG) {
+    // movemos los carros con algún periferico (teclado / control)
+    move(deltaTime);
 
-            carro.translateZ(-factorMovimientoJugador * deltaTime);
-        }
-    }
-
-    if (keys["S"]) {
-
-        if (carro.position.z < LIMIT_HIGHWAY_POS_Z_POS) {
-
-            carro.translateZ(factorMovimientoJugador * deltaTime);
-        }
-    }
-
-    if (keys["A"]) {
-
-        if (carro.position.x > -LIMIT_HIGHWAY_POS_X) {
-
-            carro.position.x -= factorMovimientoJugador * deltaTime;
-        }
-    }
-
-    if (keys["D"]) {
-
-        if (carro.position.x < LIMIT_HIGHWAY_POS_X) {
-
-            carro.position.x += factorMovimientoJugador * deltaTime;
-        }
-    }
-
+    // (carro1) verificamos que no haya chocado, si no es asi, aumentamos su score
     if (!carro.isCrashed) {
         carro.score += velocidad;
     }
 
-    // carro 2
-
+    // (carro2) verificamos que no haya chocado, si no es asi, aumentamos su score
     if (modo == 2) {
-
-        if (keys["I"]) {
-    
-            if (carro2.position.z > LIMIT_HIGHWAY_POS_Z_NEG) {
-    
-                carro2.translateZ(-factorMovimientoJugador * deltaTime);
-            }
-        }
-    
-        if (keys["K"]) {
-    
-            if (carro2.position.z < LIMIT_HIGHWAY_POS_Z_POS) {
-    
-                carro2.translateZ(factorMovimientoJugador * deltaTime);
-            }
-        }
-    
-        if (keys["J"]) {
-    
-            if (carro2.position.x > -LIMIT_HIGHWAY_POS_X) {
-    
-                carro2.position.x -= factorMovimientoJugador * deltaTime;
-            }
-        }
-    
-        if (keys["L"]) {
-    
-            if (carro2.position.x < LIMIT_HIGHWAY_POS_X) {
-    
-                carro2.position.x += factorMovimientoJugador * deltaTime;
-            }
-        }
 
         if (!carro2.isCrashed) {
             carro2.score += velocidad;
         }
     }
 
+    // movemos obstaculos
     moveObstacles(deltaTime);
 
-    _SCENE.fog.color = ilumination.hemisphere.groundColor;
+    // cambiamos el color de la niebla
+    // _SCENE.fog.color = ilumination.hemisphere.groundColor;
 };
 
 // funcion que se manda a llamar una unica vez al cargar todos los modelos
@@ -334,6 +283,51 @@ const init = () => {
     auAmbient.volume = volumen;
     auChoque.volume = volumen;
     auChoque.volume = volumen;
+    
+    let isXboxControllerSupport = 'ongamepadconnected' in window;
+
+    // creamos un timer que se ejecuta cada x segundos para actualizar los valores de los gamepads
+    // setInterval(() => {
+
+    //     actualizarValoresGamepads();
+
+    // }, 50);
+
+    if (!isXboxControllerSupport) {
+
+        window.addEventListener("gamepadconnected", (result) => {
+
+            if (!isLoadedModels)
+                return;
+
+            if (result === undefined || result === null)
+                return;
+
+            if (!result.gamepad)
+                return;
+
+            if (result.gamepad.index == 0 && gamepad1 == null)
+                gamepad1 = result.gamepad;
+
+            if (result.gamepad.index == 1 && gamepad2 == null)
+                gamepad2 = result.gamepad;
+
+            if (!isStart) {
+                start();
+            }
+        });
+    
+        window.addEventListener("gamepaddisconnected", (result) => {
+            
+            debugger;
+            
+            if (result === undefined || result === null)
+                return;
+
+            if (!result.gamepad)
+                return;
+        });
+    }
 
     // obtenemos el area donde renderizará
     let device = $('#wrapper .game');
@@ -351,6 +345,7 @@ const init = () => {
     // configuramos escena
     // _SCENE.fog = new THREE.Fog(0xcce0ff, 93, 976);
     _SCENE.fog = new THREE.Fog(0xcce0ff, 195, 490);
+    _SCENE.fog.color = ilumination.hemisphere.groundColor;
 
     // obtenemos contenedor de mensajes
     _MESSAGE = $("#texto");
@@ -1024,3 +1019,108 @@ const shareScore = () => {
     }, (response) => {
     });
 };
+
+// funcion que mueve los carros dependiendo de la tecla o botton de algún control
+const move = (deltaTime) => {
+
+    let gamepad1_x = gamepad1 == null ? 0 : gamepad1.axes[0];
+    let gamepad1_y = gamepad1 == null ? 0 : gamepad1.axes[1];
+
+    // carro 1
+    if (keys["W"] || gamepad1_y < -CONTROL_THRESHOLD) {
+
+        if (carro.position.z > LIMIT_HIGHWAY_POS_Z_NEG) {
+
+            carro.translateZ(-factorMovimientoJugador * deltaTime);
+        }
+    }
+
+    if (keys["S"] || gamepad1_y > CONTROL_THRESHOLD) {
+
+        if (carro.position.z < LIMIT_HIGHWAY_POS_Z_POS) {
+
+            carro.translateZ(factorMovimientoJugador * deltaTime);
+        }
+    }
+
+    if (keys["A"] || gamepad1_x < -CONTROL_THRESHOLD) {
+
+        if (carro.position.x > -LIMIT_HIGHWAY_POS_X) {
+
+            carro.position.x -= factorMovimientoJugador * deltaTime;
+        }
+    }
+
+    if (keys["D"] || gamepad1_x > CONTROL_THRESHOLD) {
+
+        if (carro.position.x < LIMIT_HIGHWAY_POS_X) {
+
+            carro.position.x += factorMovimientoJugador * deltaTime;
+        }
+    }
+
+    // carro 2
+    if (modo == 2) {
+
+        let gamepad2_x = gamepad2 == null ? 0 : gamepad2.axes[0];
+        let gamepad2_y = gamepad2 == null ? 0 : gamepad2.axes[1];
+
+        if (keys["I"] || gamepad2_y < -CONTROL_THRESHOLD) {
+    
+            if (carro2.position.z > LIMIT_HIGHWAY_POS_Z_NEG) {
+    
+                carro2.translateZ(-factorMovimientoJugador * deltaTime);
+            }
+        }
+    
+        if (keys["K"] || gamepad2_y > CONTROL_THRESHOLD) {
+    
+            if (carro2.position.z < LIMIT_HIGHWAY_POS_Z_POS) {
+    
+                carro2.translateZ(factorMovimientoJugador * deltaTime);
+            }
+        }
+    
+        if (keys["J"] || gamepad2_x < -CONTROL_THRESHOLD) {
+    
+            if (carro2.position.x > -LIMIT_HIGHWAY_POS_X) {
+    
+                carro2.position.x -= factorMovimientoJugador * deltaTime;
+            }
+        }
+    
+        if (keys["L"] || gamepad2_x > CONTROL_THRESHOLD) {
+    
+            if (carro2.position.x < LIMIT_HIGHWAY_POS_X) {
+    
+                carro2.position.x += factorMovimientoJugador * deltaTime;
+            }
+        }
+    }
+
+    // console.log("Gamepad1_x: " + gamepad1_x);
+    // console.log("Gamepad1_y: " + gamepad1_y);
+};
+
+// funciones de control (xbox)
+function actualizarValoresGamepads() {
+
+    var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+
+    for (var i = 0; i < gamepads.length; i++) {
+
+        if (!gamepads[i]) {
+            continue;
+        }
+
+        if (gamepads[i].index == 0) {
+            gamepad1 = gamepads[i];
+            continue;
+        }
+
+        if (gamepads[i].index == 1) {
+            gamepad2 = gamepads[i];
+            continue;
+        }
+    }
+}

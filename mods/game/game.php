@@ -34,7 +34,7 @@
     <!-- start -->
     <div id="start" class="start" onclick="start();">
         <div class="start-content text-white d-flex align-items-center justify-content-center w-100 h-100">
-            <h2 id="start-text">HAZ CLICK PARA INICIAR</h2>
+            <h2 id="start-text">HAZ CLICK O PRESIONA START PARA INICIAR</h2>
         </div>
         <div class="fondo"></div>
     </div>
