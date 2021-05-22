@@ -56,6 +56,11 @@ body {
     box-shadow: none;
 }
 
+.multijugador .nick,
+.multijugador select {
+    background-color: dimgray;
+}
+
 /*
 
 OPTIONS
@@ -115,7 +120,9 @@ OPTIONS
     transition-duration: 0.3s;
 }
 
-.options .modal-body {
+.options .modal-body,
+.options .niveles {
+    background-color: black;
     position: relative;
     padding: 0;
 }

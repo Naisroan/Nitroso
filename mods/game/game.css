@@ -52,3 +52,25 @@ body {
 .message {
     position: absolute;
 }
+
+.start,
+.gameover {
+    height: 100%;
+    position: fixed;
+    width: 100%;
+    z-index: 9999;
+    transition-duration: 0.3s;
+}
+
+.start .start-content {
+    pointer-events: none;
+}
+
+.gameover .gameover-content {
+    background: #000000db;
+}
+
+.popo {
+    display: none !important;
+    pointer-events: none !important;
+}

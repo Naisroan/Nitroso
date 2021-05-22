@@ -1,4 +1,5 @@
-.loader {
+.loader,
+.instrucciones {
     height: 100%;
     position: fixed;
     width: 100%;
@@ -12,6 +13,16 @@
 .loader img {
     filter: drop-shadow(2px 4px 6px black);
     transition-duration: 0.3s;
+}
+
+/* .instrucciones {
+    background-image: url("/res/images/menu-controles.png");
+    background-position: center center;
+    background-size: cover;
+} */
+
+.instrucciones {
+    background-image: radial-gradient(circle at center center, transparent,rgb(0,0,0)),linear-gradient(292deg, rgba(157, 157, 157,0.05) 0%, rgba(157, 157, 157,0.05) 50%,rgba(176, 176, 176,0.05) 50%, rgba(176, 176, 176,0.05) 100%),linear-gradient(272deg, rgba(73, 73, 73,0.05) 0%, rgba(73, 73, 73,0.05) 50%,rgba(98, 98, 98,0.05) 50%, rgba(98, 98, 98,0.05) 100%),linear-gradient(230deg, rgba(222, 222, 222,0.05) 0%, rgba(222, 222, 222,0.05) 50%,rgba(175, 175, 175,0.05) 50%, rgba(175, 175, 175,0.05) 100%),linear-gradient(286deg, rgba(175, 175, 175,0.05) 0%, rgba(175, 175, 175,0.05) 50%,rgba(37, 37, 37,0.05) 50%, rgba(37, 37, 37,0.05) 100%),linear-gradient(160deg, rgba(14, 14, 14,0.05) 0%, rgba(14, 14, 14,0.05) 50%,rgba(129, 129, 129,0.05) 50%, rgba(129, 129, 129,0.05) 100%),linear-gradient(72deg, rgba(26, 26, 26,0.05) 0%, rgba(26, 26, 26,0.05) 50%,rgba(202, 202, 202,0.05) 50%, rgba(202, 202, 202,0.05) 100%),linear-gradient(14deg, rgba(254, 254, 254,0.05) 0%, rgba(254, 254, 254,0.05) 50%,rgba(23, 23, 23,0.05) 50%, rgba(23, 23, 23,0.05) 100%),linear-gradient(60deg, rgba(194, 194, 194,0.05) 0%, rgba(194, 194, 194,0.05) 50%,rgba(16, 16, 16,0.05) 50%, rgba(16, 16, 16,0.05) 100%),radial-gradient(circle at center center, hsl(12,88%,58%),hsl(12,88%,58%));
 }
 
 .bg {

@@ -16,9 +16,10 @@
     <!-- fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/res/fonts/fontawesome/css/all.min.css">
 
     <!-- styles -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="/res/lib/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/site.css">
     <link rel="stylesheet" href="/res/css/loader.css">
     <link rel="stylesheet" href="/mods/game/game.css">
@@ -26,12 +27,57 @@
 <body>
 
     <!-- loader -->
-    <div class="loader">
-        <div class="bg"></div>
-        <div class="bg bg2"></div>
-        <div class="bg bg3"></div>
-        <img src="/res/logos/n.png" alt="">
+    <div class="instrucciones">
+        <img src="/res/images/menu-controles.png" width="800">
     </div>
+
+    <!-- start -->
+    <div id="start" class="start" onclick="start();">
+        <div class="start-content text-white d-flex align-items-center justify-content-center w-100 h-100">
+            <h2 id="start-text">HAZ CLICK O PRESIONA START PARA INICIAR</h2>
+        </div>
+        <div class="fondo"></div>
+    </div>
+
+    <!-- gameover -->
+    <div id="gameover" class="gameover popo" onclick="">
+        <div class="gameover-content text-white d-flex flex-column align-items-center justify-content-center w-100 h-100">
+            <h2 class="mb-5">¡GAME OVER!</h2>
+            <h4 class="mb-3">PUNTUACIONES FINALES</h4>
+            <hr>
+            <div id="pjugador1" class="text-center mb-5">
+                <h5 id="jugador-uno">JUGADOR 1</h5>
+                <strong id="jugador-uno-score">0</strong>
+            </div>
+            <div id="pjugador2" class="text-center mb-5 d-none">
+                <h5 id="jugador-dos">JUGADOR 2</h5>
+                <strong id="jugador-dos-score">0</strong>
+            </div>
+            <button class="btn btn-primary d-block mb-5" onclick="shareScore();">
+                    <i class="fab fa-facebook-f me-2"></i>
+                    Compartir en facebook
+            </button>
+            <a href="/mods/game/game.php" class="btn btn-nitroso btn-lg mt-5 mb-3">
+                JUGAR DE NUEVO
+            </a>
+            <a href="/" class="btn btn-secondary btn-lg mb-3">
+                REGRESAR AL MENÚ PRINCIPAL
+            </a>
+        </div>
+    </div>
+
+    <!-- sonidos -->
+    <audio id="auAmbient">
+        <source src="/res/music/game_music.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="auChoque">
+        <source src="/res/music/game_car_crash_sound.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="auBuff">
+        <source src="/res/music/game_car_buff.mp3" type="audio/mpeg">
+    </audio>
 
     <!-- pausa -->
     <div class="pause text-white">
@@ -62,16 +108,17 @@
     </div>
 
     <!-- scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
-    <script src="/code/three.js"></script>
-    <script src="/code/MTLLoader.js"></script>
-    <script src="/code/OBJLoader.js"></script>
-    <script src="/code/FBXLoader.js"></script>
-    <script src="/code/inflate.min.js"></script>
-    <script src="/code/Model.js"></script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/es_ES/sdk.js#xfbml=1&version=v10.0&appId=1458428857833266&autoLogAppEvents=1" nonce="AfglOnxd"></script>
+    <script src="/res/lib/jquery.min.js"></script>
+    <script src="/res/lib/bootstrap.min.js"></script>
+    <script src="/res/lib/threejs/three.js"></script>
+    <script src="/res/lib/threejs/inflate.min.js"></script>
+    <script src="/res/lib/threejs/SkeletonUtils.js"></script>
+    <script src="/res/lib/threejs/FBXLoader.js"></script>
+    <script src="/code/model.js"></script>
     <script src="/code/csts.js"></script>
     <script src="/code/fun.js"></script>
+    <script src="/code/ajax.js"></script>
     <script src="/code/game.js"></script>
 
 </body>
