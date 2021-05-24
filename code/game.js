@@ -130,8 +130,29 @@ let player_1_nick = "";
 let player_2_nick = "";
 let volumen = 1;
 
+let timerParpadeo = null;
+
 const getPistaTextureByIndex = idx => pistaMaterials[idx];
 const getParticleTextureByIndex = idx => particulasMaterials[idx];
+
+// shaders toon
+let toonShaderUniforms = {
+    color: { type: 'v', value: new THREE.Vector4(1, 0.976, 0.521, 1) }
+};
+const toonVertexShader = `
+    void main () {
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+`;
+const toonFragShader = `
+    uniform vec4 color;
+
+    void main () {
+        gl_FragColor = color;
+    }
+`;
+let toonShaderMaterial = null;
+let carOriginalMaterial = null;
 
 // load
 window.onload = () => {
@@ -188,6 +209,7 @@ const onLoadedAllModels = () => {
         carro.isBuff = false;
         carro.score = 0;
         carro.position.set(0, 0, 0);
+        carOriginalMaterial = carro.children[0].material;
         _SCENE.add(carro);
 
         if (modo == 2) {
@@ -408,6 +430,19 @@ const init = () => {
         pistaMaterials[i].wrapS = THREE.RepeatWrapping;
         pistaMaterials[i].wrapT = THREE.RepeatWrapping;
     }
+
+    // creamos shader toon
+    toonShaderMaterial = new THREE.ShaderMaterial(
+        {
+            uniforms: toonShaderUniforms,
+            vertexShader: toonVertexShader,
+            fragmentShader: toonFragShader,
+            wrapping: THREE.ClampToEdgeWrapping,
+            shading: THREE.SmoothShading,
+            side: THREE.DoubleSide,
+            transparent: true
+        }
+    );
 
     // particulas
     particulas = createParticles(SPRITES_PATH, "par_water_01.png", 1, 3000);
@@ -724,7 +759,7 @@ const onCollision = (obj, collidedObject) => {
         
         // si no tiene un buff activado lo manda a volar jiji
         if (!obj.isBuff) {
-            killCar(obj);
+             killCar(obj);
         }
 
         killObs(collidedObject);
@@ -825,11 +860,27 @@ const buffCar = (car) => {
     auBuff.play();
     car.isBuff = true;
     velocidad = velocidad + 0.2;
+    car.children[0].material = toonShaderMaterial;
+
+    timerParpadeo = setInterval(() => {
+
+        if (car.children[0].material.id == carOriginalMaterial.id) {
+
+            car.children[0].material = toonShaderMaterial;
+
+        } else {
+
+            car.children[0].material = carOriginalMaterial;
+        }
+
+    }, 300);
 
     setTimeout(() => {
 
+        clearInterval(timerParpadeo);
         car.isBuff = false;
         velocidad = velocidad - 0.2;
+        car.children[0].material = carOriginalMaterial;
 
     }, 5000);
 };
@@ -1124,3 +1175,4 @@ function actualizarValoresGamepads() {
         }
     }
 }
+
